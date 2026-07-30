@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#060d18">
+<meta name="format-detection" content="telephone=no">
+<meta name="robots" content="noindex, nofollow">
+<title>天衍计划 — 预测性AI大模型系统</title>
+<style>
+  :root {
+    --bg-deep: #060d18;
+    --bg-primary: #0a1628;
+    --bg-card: rgba(10, 22, 45, 0.7);
+    --bg-card-hover: rgba(14, 28, 55, 0.85);
+    --bg-input: rgba(0, 0, 0, 0.35);
+    --text-primary: #e0e8f8;
+    --text-secondary: #8aa4c8;
+    --text-muted: #5a7090;
+    --accent: #4a9eff;
+    --accent-glow: rgba(74, 158, 255, 0.3);
+    --accent-soft: rgba(74, 158, 255, 0.08);
+    --border-subtle: rgba(74, 158, 255, 0.12);
+    --border-glow: rgba(74, 158, 255, 0.25);
+    --danger: #e05555;
+    --danger-soft: rgba(224, 85, 85, 0.1);
+    --success: #4ecf8a;
+    --success-soft: rgba(78, 207, 138, 0.1);
+    --warning: #f0a050;
+    --warning-soft: rgba(240, 160, 80, 0.1);
+    --radius: 10px;
+    --radius-lg: 20px;
+    --transition: 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --sidebar-w: 240px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    overflow-x: hidden;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  /* ========== Particle Canvas ========== */
+  #bg-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ============================================
+     PUBLIC PAGE
+     ============================================ */
+  .page-wrapper { display: none; }
+  .page-wrapper.active { display: block; }
+
+  /* ========== Navigation ========== */
+  .navbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    padding: 0 2rem;
+    padding-top: max(0px, env(safe-area-inset-top, 0px));
+    height: calc(64px + env(safe-area-inset-top, 0px));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6, 13, 24, 0.75);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border-bottom: 1px solid var(--border-subtle);
+    transition: all var(--transition);
+    will-change: background, box-shadow;
+  }
+  .navbar.scrolled {
+    background: rgba(6, 13, 24, 0.94);
+    border-bottom-color: rgba(74, 158, 255, 0.15);
+    box-shadow: 0 1px 32px rgba(0, 0, 0, 0.6);
+  }
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1200px;
+  }
+  .nav-brand {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text-primary);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .nav-brand .nav-dot { color: var(--accent); margin: 0 0.15em; }
+  .nav-links { display: flex; gap: 0.25rem; list-style: none; }
+  .nav-links a {
+    display: block;
+    padding: 0.5rem 1.1rem;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: 8px;
+    letter-spacing: 0.04em;
+    transition: all var(--transition);
+  }
+  .nav-admin-link { color: #ff6b6b !important; }
+  @media (hover: hover) {
+    .nav-links a:hover { color: var(--text-primary); background: rgba(74, 158, 255, 0.08); }
+    .nav-admin-link:hover { color: #ff6b6b !important; background: rgba(255, 107, 107, 0.08) !important; }
+  }
+  /* Mobile hamburger */
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    padding: 8px;
+    z-index: 1001;
+  }
+  .hamburger span {
+    display: block;
+    width: 22px; height: 1.5px;
+    background: var(--text-primary);
+    border-radius: 1px;
+    transition: all var(--transition);
+  }
+  .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(4.5px, 4.5px); }
+  .hamburger.active span:nth-child(2) { opacity: 0; }
+  .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(4.5px, -4.5px); }
+
+  /* ========== Hero ========== */
+  .hero {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 6rem 2rem 4rem;
+  }
+  .hero-eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.1s forwards;
+  }
+  .hero-title {
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    line-height: 1.15;
+    margin-bottom: 1rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+  .hero-title .hl {
+    color: var(--accent);
+    text-shadow: 0 0 60px var(--accent-glow);
+  }
+  .hero-subtitle {
+    font-size: clamp(1rem, 1.8vw, 1.3rem);
+    color: var(--text-secondary);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.8rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.35s forwards;
+  }
+  .hero-desc {
+    max-width: 600px;
+    font-size: 1rem;
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.5s forwards;
+  }
+  .hero-btns {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.65s forwards;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.8rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.06em;
+    border-radius: 100px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all var(--transition);
+    cursor: pointer;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 32px var(--accent-glow);
+  }
+  @media (hover: hover) {
+    .btn-primary:hover {
+      background: #5aaeff;
+      box-shadow: 0 0 48px rgba(74, 158, 255, 0.5);
+      transform: translateY(-2px);
+    }
+  }
+  .btn-outline {
+    border: 1px solid var(--border-glow);
+    color: var(--accent);
+    background: transparent;
+  }
+  @media (hover: hover) {
+    .btn-outline:hover { background: rgba(74, 158, 255, 0.08); border-color: var(--accent); }
+  }
+  .hero-scroll {
+    position: absolute;
+    bottom: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 1s forwards;
+  }
+  .hero-scroll span { font-size: 0.68rem; letter-spacing: 0.2em; color: var(--text-muted); }
+  .scroll-line {
+    width: 1px; height: 36px;
+    background: linear-gradient(to bottom, var(--accent), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+
+  /* ========== Section Common ========== */
+  .section { position: relative; z-index: 1; padding: 5rem 2rem; }
+  .section-inner { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    text-align: center;
+    font-size: 0.72rem;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    margin-bottom: 0.8rem;
+    text-transform: uppercase;
+  }
+  .section-title {
+    text-align: center;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.8rem;
+    color: var(--text-primary);
+  }
+  .section-subtitle {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 3rem;
+  }
+
+  /* ========== About / Features ========== */
+  .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .feature-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem 1.8rem;
+    text-align: center;
+    transition: all var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  @media (hover: hover) {
+    .feature-card:hover {
+      border-color: var(--border-glow);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 48px rgba(74, 158, 255, 0.08);
+    }
+    .feature-card:hover::before { opacity: 1; }
+  }
+  .feature-icon {
+    width: 56px; height: 56px;
+    margin: 0 auto 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: rgba(74, 158, 255, 0.1);
+    color: var(--accent);
+    transition: all var(--transition);
+  }
+  @media (hover: hover) {
+    .feature-card:hover .feature-icon {
+      background: rgba(74, 158, 255, 0.18);
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+  }
+  .feature-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: 0.04em; }
+  .feature-card p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.7; }
+
+  /* ========== Team ========== */
+  .team-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+  .team-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem 2rem;
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    transition: all var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+  @media (hover: hover) {
+    .team-card:hover {
+      border-color: var(--border-glow);
+      box-shadow: 0 4px 40px rgba(74, 158, 255, 0.06);
+    }
+  }
+  .team-avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(74, 158, 255, 0.2), rgba(74, 158, 255, 0.06));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+    border: 2px solid rgba(74, 158, 255, 0.2);
+  }
+  .team-info h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .team-role { font-size: 0.8rem; color: var(--accent); letter-spacing: 0.06em; margin-bottom: 0.3rem; }
+  .team-age { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.6rem; }
+  .team-bio { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.7; }
+
+  /* ========== Recruitment ========== */
+  .recruit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .recruit-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 2.2rem 1.5rem;
+    transition: all var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+  .recruit-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  @media (hover: hover) {
+    .recruit-card:hover {
+      border-color: var(--border-glow);
+      transform: translateY(-3px);
+      box-shadow: 0 4px 36px rgba(74, 158, 255, 0.06);
+    }
+    .recruit-card:hover::after { opacity: 1; }
+  }
+  .recruit-phase {
+    display: inline-block;
+    padding: 0.2rem 0.7rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    background: rgba(74, 158, 255, 0.1);
+    border: 1px solid rgba(74, 158, 255, 0.2);
+    border-radius: 100px;
+    margin-bottom: 1rem;
+  }
+  .recruit-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .recruit-card .recruit-desc { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.6; }
+  .recruit-card .recruit-req {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  /* ========== Footer ========== */
+  .footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 3rem 2rem;
+    border-top: 1px solid var(--border-subtle);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+  .footer-admin-link {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    opacity: 0.5;
+    text-decoration: none;
+    transition: opacity 0.3s;
+    cursor: pointer;
+  }
+  @media (hover: hover) { .footer-admin-link:hover { opacity: 1; } }
+
+  /* ============================================
+     ADMIN LOGIN PAGE
+     ============================================ */
+  .login-wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  .login-back {
+    position: absolute;
+    top: calc(30px + env(safe-area-inset-top, 0px));
+    left: 30px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: color 0.3s;
+    z-index: 10;
+    letter-spacing: 0.04em;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  @media (hover: hover) { .login-back:hover { color: var(--accent); } }
+  .login-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 3rem 2.5rem;
+    width: 100%;
+    max-width: 420px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 8px 64px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(74, 158, 255, 0.05) inset;
+    animation: fadeIn 0.6s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .login-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
+  }
+  .login-logo {
+    text-align: center;
+    margin-bottom: 2.2rem;
+  }
+  .login-logo h1 { font-size: 2rem; font-weight: 900; letter-spacing: 0.1em; color: var(--text-primary); }
+  .login-logo h1 span { color: var(--accent); }
+  .login-logo p { font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.18em; margin-top: 0.3rem; text-transform: uppercase; }
+  .form-group { margin-bottom: 1.1rem; }
+  .form-group label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.08em;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+  }
+  .form-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-family: inherit;
+    outline: none;
+    transition: all var(--transition);
+    letter-spacing: 0.04em;
+  }
+  .form-group input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.1); }
+  .form-group input::placeholder { color: var(--text-muted); opacity: 0.4; }
+  .login-btn {
+    width: 100%;
+    padding: 0.8rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all var(--transition);
+    margin-top: 0.5rem;
+    font-family: inherit;
+    box-shadow: 0 0 24px var(--accent-glow);
+    position: relative;
+    overflow: hidden;
+  }
+  .login-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 0; height: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+  .login-btn:active::after { width: 600px; height: 600px; }
+  @media (hover: hover) {
+    .login-btn:hover {
+      background: #5aaeff;
+      box-shadow: 0 0 40px rgba(74, 158, 255, 0.5);
+      transform: translateY(-1px);
+    }
+  }
+  .login-btn:active { transform: scale(0.98); }
+  .login-error {
+    color: var(--danger);
+    font-size: 0.78rem;
+    text-align: center;
+    margin-top: 0.8rem;
+    min-height: 1.2em;
+    letter-spacing: 0.04em;
+  }
+  .login-sub {
+    text-align: center;
+    margin-top: 1.2rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    opacity: 0.5;
+  }
+
+  /* ============================================
+     ADMIN DASHBOARD
+     ============================================ */
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: var(--sidebar-w);
+    background: rgba(8, 18, 36, 0.95);
+    border-right: 1px solid var(--border-subtle);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    transition: transform var(--transition);
+    overflow-y: auto;
+  }
+  .sidebar-brand {
+    padding: calc(1.5rem + env(safe-area-inset-top, 0px)) 1.5rem 1rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .sidebar-brand h2 { font-size: 1.15rem; font-weight: 800; letter-spacing: 0.06em; }
+  .sidebar-brand h2 span { color: var(--accent); }
+  .sidebar-brand p { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.12em; margin-top: 0.2rem; }
+  .sidebar-nav {
+    flex: 1;
+    padding: 1rem 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .sidebar-nav a {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: 8px;
+    letter-spacing: 0.04em;
+    transition: all var(--transition);
+    cursor: pointer;
+  }
+  @media (hover: hover) {
+    .sidebar-nav a:hover { color: var(--text-primary); background: var(--accent-soft); }
+  }
+  .sidebar-nav a.active { color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+  .sidebar-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .sidebar-footer .user-info { font-size: 0.75rem; color: var(--text-secondary); }
+  .sidebar-footer .user-info strong { color: var(--text-primary); }
+  .sidebar-logout {
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    transition: all var(--transition);
+    font-family: inherit;
+    text-align: center;
+  }
+  @media (hover: hover) {
+    .sidebar-logout:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-soft); }
+  }
+  .main-content {
+    margin-left: var(--sidebar-w);
+    padding: 2rem;
+    min-height: 100vh;
+  }
+  .page-panel { display: none; }
+  .page-panel.active { display: block; animation: fadeIn 0.35s ease; }
+  .page-header {
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .page-header h3 { font-size: 1.4rem; font-weight: 700; letter-spacing: 0.05em; }
+  .page-header .admin-info { font-size: 0.78rem; color: var(--text-muted); }
+  .page-header .admin-info span { color: var(--accent); }
+  .data-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .data-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .data-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  @media (hover: hover) { .data-card:hover::after { opacity: 1; } }
+  .data-number {
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    margin-bottom: 0.3rem;
+  }
+  .data-label { font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.1em; }
+  .dash-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .dash-card h3 { font-size: 0.95rem; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 1rem; }
+  .dash-card p { font-size: 0.82rem; color: var(--text-secondary); line-height: 2; }
+  .secret-notice { color: var(--danger); font-weight: 600; letter-spacing: 0.04em; }
+  .info-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  .info-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 0.72rem;
+  }
+  .info-table td {
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    color: var(--text-secondary);
+  }
+  .status-active { color: var(--success); font-weight: 600; }
+  .status-pending { color: var(--warning); font-weight: 600; }
+  .sidebar-toggle {
+    display: none;
+    position: fixed;
+    top: calc(1rem + env(safe-area-inset-top, 0px));
+    left: 1rem;
+    z-index: 200;
+    width: 40px; height: 40px;
+    background: rgba(8, 18, 36, 0.95);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 99;
+  }
+
+  /* ========== Animations ========== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.3; }
+    50%      { opacity: 0.9; }
+  }
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; }
+  }
+
+  /* ========== Responsive ========== */
+  @media (max-width: 1024px) {
+    .features-grid { grid-template-columns: repeat(2, 1fr); }
+    .recruit-grid { grid-template-columns: repeat(2, 1fr); }
+    .data-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 768px) {
+    .features-grid,
+    .team-grid,
+    .recruit-grid { grid-template-columns: 1fr; }
+    .navbar { padding: 0 1rem; }
+    .nav-links {
+      position: fixed;
+      top: 0; right: -100%;
+      width: 260px; height: 100vh;
+      height: -webkit-fill-available;
+      flex-direction: column;
+      background: rgba(6, 13, 24, 0.96);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      padding: 5rem 1.5rem 2rem;
+      padding-top: calc(5rem + env(safe-area-inset-top, 0px));
+      padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+      gap: 0.5rem;
+      transition: right var(--transition);
+      border-left: 1px solid var(--border-subtle);
+      z-index: 1001;
+    }
+    .nav-links.open { right: 0; }
+    .nav-links a {
+      padding: 0.75rem 1rem;
+      font-size: 0.95rem;
+      border-radius: 10px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+    .hamburger { display: flex; }
+    .section { padding: 3.5rem 1.2rem; }
+    .hero { padding: 5rem 1.2rem 3rem; }
+    .hero-title { font-size: 2.2rem; }
+    .team-card { flex-direction: column; align-items: center; text-align: center; }
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar-toggle { display: flex; }
+    .sidebar-overlay.show { display: block; }
+    .main-content { margin-left: 0; padding: 1.2rem; padding-top: 4rem; }
+    .data-grid { grid-template-columns: 1fr 1fr; }
+    .data-number { font-size: 1.5rem; }
+    .login-card { padding: 2rem 1.5rem; }
+    .page-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  }
+  @media (max-width: 480px) {
+    .hero-btns { flex-direction: column; }
+    .btn { width: 100%; justify-content: center; }
+    .feature-card { padding: 1.8rem 1.2rem; }
+    .recruit-card { padding: 1.6rem 1.2rem; }
+    .data-grid { grid-template-columns: 1fr; }
+    .main-content { padding: 1rem; padding-top: 3.5rem; }
+  }
+
+  /* -- iOS-specific fixes -- */
+  @supports (-webkit-touch-callout: none) {
+    .navbar {
+      -webkit-transform: translateZ(0);
+    }
+    .login-card, .sidebar {
+      -webkit-transform: translateZ(0);
+    }
+  }
+
+  /* -- Music Button (deep blue theme) -- */
+  .music-btn {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    width: 50px;
+    height: 50px;
+    background: rgba(74, 158, 255, 0.12);
+    border: 2px solid var(--border-glow);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1001;
+    transition: all 0.3s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  @media (hover: hover) {
+    .music-btn:hover {
+      background: rgba(74, 158, 255, 0.25);
+      transform: scale(1.1);
+      box-shadow: 0 0 28px rgba(74, 158, 255, 0.4);
+    }
+  }
+  .music-btn:active { transform: scale(0.95); }
+  .music-btn span { font-size: 20px; }
+
+  @media (max-width: 480px) {
+    .music-btn {
+      bottom: 20px;
+      right: 16px;
+      width: 44px;
+      height: 44px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- ============================================
+     PUBLIC PAGE
+     ============================================ -->
+<div class="page-wrapper active" id="publicPage">
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="#" class="nav-brand">天衍<span class="nav-dot">·</span>计划</a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#about">关于</a></li>
+        <li><a href="#team">团队</a></li>
+        <li><a href="#recruit">招募</a></li>
+        <li><a class="nav-admin-link" onclick="goToAdmin()">后台入口</a></li>
+      </ul>
+      <div class="hamburger" id="hamburger" role="button" aria-label="菜单" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-eyebrow">C 国 合 作 伙 伴</div>
+    <h1 class="hero-title">天衍<span class="hl">计划</span></h1>
+    <p class="hero-subtitle">预测性AI大模型系统</p>
+    <p class="hero-desc">
+      基于深度学习的下一代人工智能预测系统，<br>为国家重大战略决策提供科学依据。
+    </p>
+    <div class="hero-btns">
+      <a href="#about" class="btn btn-primary">了解更多</a>
+      <a href="#recruit" class="btn btn-outline">加入我们</a>
+    </div>
+    <div class="hero-scroll">
+      <span>探索</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <section class="section" id="about">
+    <div class="section-inner">
+      <p class="section-label">TIANYAN PROJECT</p>
+      <h2 class="section-title">关于天衍计划</h2>
+      <p class="section-subtitle">以智能预测驱动科学决策，构建全球视野的情报分析网络</p>
+      <div class="features-grid">
+        <div class="feature-card reveal">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+            </svg>
+          </div>
+          <h3>智能预测</h3>
+          <p>基于先进的深度学习算法，构建能够预测未来趋势的AI大模型系统，实现对复杂社会动态的精准模拟与预判。</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+          </div>
+          <h3>科学决策</h3>
+          <p>为国家重大战略决策提供数据支撑和智能分析服务，将海量信息转化为可执行的战略洞察。</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/>
+            </svg>
+          </div>
+          <h3>全球视野</h3>
+          <p>整合全球数据资源，构建全方位的情报分析网络，实现对国际局势的深度理解与前瞻预判。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="team">
+    <div class="section-inner">
+      <p class="section-label">CORE TEAM</p>
+      <h2 class="section-title">核心团队</h2>
+      <p class="section-subtitle">汇聚顶尖人才，驱动天衍计划的核心引擎</p>
+      <div class="team-grid">
+        <div class="team-card reveal">
+          <div class="team-avatar">&#x1F468;&#x200D;&#x1F4BB;</div>
+          <div class="team-info">
+            <h3>周文轩</h3>
+            <p class="team-role">首席工程师 / 一期主工程师</p>
+            <p class="team-age">29岁</p>
+            <p class="team-bio">天衍计划总设计师，负责核心算法架构的设计与研发。在深度学习与预测模型领域拥有丰富经验，主导整个技术方向。</p>
+          </div>
+        </div>
+        <div class="team-card reveal">
+          <div class="team-avatar">&#x1F468;&#x200D;&#x1F52C;</div>
+          <div class="team-info">
+            <h3>郑德明</h3>
+            <p class="team-role">一期副工程师</p>
+            <p class="team-age">47岁</p>
+            <p class="team-bio">资深系统架构师，负责工程实施与系统架构设计。在大型分布式系统领域拥有二十余年实战经验，确保系统稳定可靠。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="recruit">
+    <div class="section-inner">
+      <p class="section-label">JOIN US</p>
+      <h2 class="section-title">人才招募</h2>
+      <p class="section-subtitle">寻找志同道合者，共同推进预测性AI的未来</p>
+      <div class="recruit-grid">
+        <div class="recruit-card reveal">
+          <span class="recruit-phase">第一期</span>
+          <h3>算法工程师</h3>
+          <p class="recruit-desc">负责核心预测算法的研发与优化</p>
+          <p class="recruit-req">
+            要求：7-10年码龄，精通系统架构，参与过AI开发（3-5年）并有所成就。<br><br>
+            拥有技术发明专利者、ACM-ICPC区域赛获奖者、GitHub star超过5k的项目作者优先录取。
+          </p>
+        </div>
+        <div class="recruit-card reveal">
+          <span class="recruit-phase">第二期</span>
+          <h3>数据科学家</h3>
+          <p class="recruit-desc">大数据分析与模型训练</p>
+          <p class="recruit-req">
+            要求：5-8年码龄，精通系统架构，参与过AI开发（2-3年）并有所成就。<br><br>
+            拥有技术发明专利者、ACM-ICPC区域赛获奖者、GitHub star超过5k的项目作者优先录取。
+          </p>
+        </div>
+        <div class="recruit-card reveal">
+          <span class="recruit-phase">第三期</span>
+          <h3>系统架构师</h3>
+          <p class="recruit-desc">分布式系统设计与优化</p>
+          <p class="recruit-req">
+            要求：高校毕业生，善于学习，学习C/C++至少3年。<br><br>
+            拥有技术发明专利者、ACM-ICPC区域赛获奖者、GitHub star超过5k的项目作者优先录取。
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    &copy; <span id="currentYear"></span> 天衍计划 · 由<a href="https://z-zm01.github.io">zm</a>维护
+    &nbsp;·&nbsp;
+    <a class="footer-admin-link" onclick="goToAdmin()">后台</a>
+  </footer>
+</div>
+
+<!-- ===== 音乐播放器 ===== -->
+<audio id="bgMusic" loop></audio>
+<div class="music-btn" onclick="toggleMusic()">
+  <span id="musicIcon">🔇</span>
+</div>
+
+<!-- ============================================
+     ADMIN LOGIN PAGE
+     ============================================ -->
+<div class="page-wrapper" id="loginPage">
+  <div class="login-wrapper">
+    <div class="login-back" onclick="goToPublic()">← 返回首页</div>
+    <div class="login-card">
+      <div class="login-logo">
+        <h1>天衍<span>计划</span></h1>
+        <p>管理系统</p>
+      </div>
+      <div class="form-group">
+        <label>账户</label>
+        <input type="text" id="loginUser" placeholder="请输入账户" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>密码</label>
+        <input type="password" id="loginPass" placeholder="请输入密码">
+      </div>
+      <button class="login-btn" onclick="doLogin()">登 录</button>
+      <div class="login-error" id="loginError"></div>
+      <p class="login-sub">请使用内部账户登录</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     ADMIN DASHBOARD
+     ============================================ -->
+<div class="page-wrapper" id="adminPage">
+
+  <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</button>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <h2>天衍<span>计划</span></h2>
+      <p>管理系统</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="active" data-page="overview" onclick="switchPage('overview')">📊 总览</a>
+      <a data-page="recruit" onclick="switchPage('recruit')">📋 招募管理</a>
+      <a data-page="members" onclick="switchPage('members')">👥 人员名单</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">当前用户：<strong>Z_zm01</strong></div>
+      <button class="sidebar-logout" onclick="doLogout()">退出登录</button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+
+    <!-- ===== 总览 ===== -->
+    <div class="page-panel active" id="page-overview">
+      <div class="page-header">
+        <h3>总览</h3>
+        <div class="admin-info"><span>Z_zm01</span> · 超级管理员</div>
+      </div>
+      <div class="data-grid">
+        <div class="data-card">
+          <div class="data-number">009</div>
+          <div class="data-label">当前计划期数</div>
+        </div>
+        <div class="data-card">
+          <div class="data-number">247</div>
+          <div class="data-label">总参与人员</div>
+        </div>
+        <div class="data-card">
+          <div class="data-number">36.3926%</div>
+          <div class="data-label">模拟精度</div>
+        </div>
+        <div class="data-card">
+          <div class="data-number">13</div>
+          <div class="data-label">和平方案</div>
+        </div>
+      </div>
+      <div class="dash-card">
+        <h3>天衍计划</h3>
+        <p>宏观宇宙模拟系统 — 寻找人类和平方式</p>
+      </div>
+      <div class="dash-card">
+        <h3>真实计划说明</h3>
+        <p>
+          天衍计划实际为C国国家秘密机关主导的超级计算机模拟项目。<br>
+          通过构建宏观宇宙级模拟系统，计算并推演人类文明的各种可能发展路径，<br>
+          寻找实现永久和平的最佳方案。该项目代号"天衍"，意为"推演天道"。
+        </p>
+        <p style="margin-top: 1rem;" class="secret-notice">⚠ 机密信息，仅限授权人员查阅</p>
+      </div>
+    </div>
+
+    <!-- ===== 招募管理 ===== -->
+    <div class="page-panel" id="page-recruit">
+      <div class="page-header">
+        <h3>招募管理</h3>
+      </div>
+      <div class="data-grid">
+        <div class="data-card">
+          <div class="data-number" style="color:var(--success);">已完成</div>
+          <div class="data-label">第一期招募</div>
+        </div>
+        <div class="data-card">
+          <div class="data-number" style="color:#7b2cbf;">进行中</div>
+          <div class="data-label">第二期招募</div>
+        </div>
+        <div class="data-card">
+          <div class="data-number" style="color:var(--warning);">筹备中</div>
+          <div class="data-label">第三期招募</div>
+        </div>
+        <div class="data-card">
+          <div class="data-number">45</div>
+          <div class="data-label">待审核</div>
+        </div>
+      </div>
+      <div class="dash-card">
+        <h3>第一期招募内容</h3>
+        <p>招募岗位：算法工程师、系统架构师、数据分析师<br>人数：40人 ｜ 状态：已完成 ｜ 时间：2089.03 — 2089.06</p>
+      </div>
+      <div class="dash-card">
+        <h3>第二期招募内容</h3>
+        <p>招募岗位：数据科学家、机器学习工程师、安全专家<br>人数：50人 ｜ 状态：进行中 ｜ 时间：2092.03 — 2092.07</p>
+      </div>
+      <div class="dash-card">
+        <h3>第三期招募内容</h3>
+        <p>招募岗位：量子计算工程师、系统架构师、高级算法专家<br>人数：待定 ｜ 状态：筹备中 ｜ 时间：2094.03开始</p>
+      </div>
+    </div>
+
+    <!-- ===== 人员名单 ===== -->
+    <div class="page-panel" id="page-members">
+      <div class="page-header">
+        <h3>人员名单</h3>
+      </div>
+      <div class="dash-card">
+        <h3>第一期招募人员名单</h3>
+        <div style="overflow-x:auto;">
+          <table class="info-table">
+            <thead>
+              <tr><th>编号</th><th>姓名</th><th>岗位</th><th>入职时间</th><th>状态</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>TY-001</td><td>周文轩</td><td>首席工程师</td><td>2024.01.15</td><td class="status-active">在职</td></tr>
+              <tr><td>TY-002</td><td>郑德明</td><td>副工程师</td><td>2024.01.15</td><td class="status-active">在职</td></tr>
+              <tr><td>TY-003</td><td>李明远</td><td>算法工程师</td><td>2024.02.01</td><td class="status-active">在职</td></tr>
+              <tr><td>TY-004</td><td>王思涵</td><td>算法工程师</td><td>2024.02.01</td><td class="status-active">在职</td></tr>
+              <tr><td>TY-005</td><td>张伟</td><td>系统架构师</td><td>2024.02.15</td><td class="status-active">在职</td></tr>
+              <tr><td>TY-006</td><td>刘芳</td><td>数据分析师</td><td>2024.03.01</td><td class="status-active">在职</td></tr>
+              <tr><td>TY-007</td><td>陈军</td><td>算法工程师</td><td>2024.03.15</td><td class="status-active">在职</td></tr>
+              <tr><td>TY-008</td><td>赵敏</td><td>数据分析师</td><td>2024.04.01</td><td class="status-active">在职</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="dash-card">
+        <h3>第二期招募人员名单</h3>
+        <div style="overflow-x:auto;">
+          <table class="info-table">
+            <thead>
+              <tr><th>编号</th><th>姓名</th><th>岗位</th><th>入职时间</th><th>状态</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>TY-009</td><td>黄志明</td><td>数据科学家</td><td>2024.07.01</td><td class="status-active">在职</td></tr>
+              <tr><td>TY-010</td><td>林雪</td><td>机器学习工程师</td><td>2024.07.01</td><td class="status-active">在职</td></tr>
+              <tr><td>TY-011</td><td>吴强</td><td>安全专家</td><td>2024.07.15</td><td class="status-active">在职</td></tr>
+              <tr><td>TY-012</td><td>周婷</td><td>数据科学家</td><td>2024.08.01</td><td class="status-active">在职</td></tr>
+              <tr><td>TY-013</td><td>郑浩</td><td>机器学习工程师</td><td>2024.08.15</td><td class="status-pending">培训中</td></tr>
+              <tr><td>TY-014</td><td>孙丽</td><td>数据科学家</td><td>2024.09.01</td><td class="status-pending">培训中</td></tr>
+              <tr><td>TY-015</td><td>杨洋</td><td>安全专家</td><td>待定</td><td class="status-pending">待入职</td></tr>
+              <tr><td>TY-016</td><td>朱琳</td><td>机器学习工程师</td><td>待定</td><td class="status-pending">待入职</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  /*
+  ╔══════════════════════════════════════════════════╗
+  ║  后台登录凭据 - CREDENTIALS                      ║
+  ║                                                  ║
+  ║  账号 (Username): Z_zm01                         ║
+  ║  密码 (Password): 00z_zm_k40193                  ║
+  ║                                                  ║
+  ║  ⚠ 正式部署请改为后端 API 验证 + 环境变量。     ║
+  ╚══════════════════════════════════════════════════╝
+  */
+  const ADMIN_USERNAME = 'Z_zm01';
+  const ADMIN_PASSWORD = '00z_zm_k40193';
+
+  document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+  // ========== Particle Background (Tech Grid + Floating Dots) ==========
+  (function() {
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let animationId, resizeTimeout;
+
+    function resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = window.innerWidth + 'px';
+      canvas.style.height = window.innerHeight + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    class Particle {
+      constructor() {
+        this.reset();
+        this.y = Math.random() * window.innerHeight;
+      }
+      reset() {
+        this.x = Math.random() * window.innerWidth;
+        this.y = -10;
+        this.size = Math.random() * 1.5 + 0.4;
+        this.speed = Math.random() * 0.5 + 0.2;
+        this.opacity = Math.random() * 0.4 + 0.1;
+        this.hue = 200 + Math.random() * 30;
+      }
+      update() {
+        this.y += this.speed;
+        this.x += Math.sin(this.y * 0.015) * 0.2;
+        if (this.y > window.innerHeight + 10) this.reset();
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${this.hue}, 70%, 65%, ${this.opacity})`;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size * 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${this.hue}, 70%, 65%, ${this.opacity * 0.15})`;
+        ctx.fill();
+      }
+    }
+
+    function drawGrid() {
+      const w = window.innerWidth, h = window.innerHeight;
+      const spacing = 80;
+      ctx.strokeStyle = 'rgba(74, 158, 255, 0.03)';
+      ctx.lineWidth = 0.5;
+      for (let x = spacing; x < w; x += spacing) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+      }
+      for (let y = spacing; y < h; y += spacing) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+      const scanY = (Date.now() * 0.03) % h;
+      ctx.strokeStyle = 'rgba(74, 158, 255, 0.06)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, scanY); ctx.lineTo(w, scanY); ctx.stroke();
+    }
+
+    function init() {
+      resize();
+      const area = window.innerWidth * window.innerHeight;
+      const count = Math.min(Math.floor(area / 18000), window.innerWidth <= 768 ? 60 : 100);
+      particles = Array.from({ length: count }, () => new Particle());
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      drawGrid();
+      particles.forEach(p => { p.update(); p.draw(); });
+      animationId = requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => { resize(); particles.forEach(p => p.reset()); }, 150);
+    });
+
+    init();
+    animate();
+  })();
+
+  // ========== Page Routing ==========
+  function showPage(pageId) {
+    document.querySelectorAll('.page-wrapper').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById(pageId);
+    if (target) target.classList.add('active');
+  }
+
+  function goToAdmin() {
+    window.location.hash = 'admin';
+    showPage('loginPage');
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPass').value = '';
+    document.getElementById('loginError').textContent = '';
+  }
+
+  function goToPublic() {
+    window.location.hash = '';
+    showPage('publicPage');
+  }
+
+  function checkRoute() {
+    const hash = window.location.hash;
+    const path = window.location.pathname;
+    if (hash === '#admin' || path.includes('/admin') || path.endsWith('/admin.html')) {
+      if (sessionStorage.getItem('tianyan_admin') === 'true') {
+        showPage('adminPage');
+      } else {
+        showPage('loginPage');
+      }
+    } else {
+      showPage('publicPage');
+    }
+  }
+
+  checkRoute();
+  window.addEventListener('hashchange', checkRoute);
+
+  // ========== Login ==========
+  function doLogin() {
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value.trim();
+    const err = document.getElementById('loginError');
+    if (!u || !p) { err.textContent = '请输入账户和密码'; return; }
+    if (u === ADMIN_USERNAME && p === ADMIN_PASSWORD) {
+      err.textContent = '';
+      sessionStorage.setItem('tianyan_admin', 'true');
+      showPage('adminPage');
+    } else {
+      err.textContent = '账户或密码错误';
+      document.getElementById('loginPass').value = '';
+    }
+  }
+
+  document.getElementById('loginPass').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') doLogin();
+  });
+  document.getElementById('loginUser').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('loginPass').focus();
+  });
+
+  function doLogout() {
+    sessionStorage.removeItem('tianyan_admin');
+    showPage('loginPage');
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPass').value = '';
+    document.getElementById('loginError').textContent = '';
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+  }
+
+  // ========== Dashboard Page Switching ==========
+  function switchPage(page) {
+    document.querySelectorAll('.page-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+    const panel = document.getElementById('page-' + page);
+    if (panel) panel.classList.add('active');
+    const navLink = document.querySelector('.sidebar-nav a[data-page="' + page + '"]');
+    if (navLink) navLink.classList.add('active');
+    if (window.innerWidth <= 768) {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('show');
+    }
+  }
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
+  }
+
+  // Auto-login
+  if (sessionStorage.getItem('tianyan_admin') === 'true') {
+    if (window.location.hash === '#admin') showPage('adminPage');
+  }
+
+  // ========== Navbar Scroll (public page only) ==========
+  const navbar = document.getElementById('navbar');
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 50);
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+
+  // ========== Scroll Reveal (public page only) ==========
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // ========== Mobile Hamburger (public page) ==========
+  const hamburger = document.getElementById('hamburger');
+  const navLinks = document.getElementById('navLinks');
+  let menuScrollY = 0;
+
+  if (hamburger && navLinks) {
+    hamburger.addEventListener('click', () => {
+      const isOpen = navLinks.classList.toggle('open');
+      hamburger.classList.toggle('active');
+      hamburger.setAttribute('aria-expanded', isOpen);
+
+      if (isOpen) {
+        menuScrollY = window.scrollY;
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${menuScrollY}px`;
+        document.body.style.width = '100%';
+      } else {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        window.scrollTo(0, menuScrollY);
+      }
+    });
+
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        hamburger.classList.remove('active');
+        hamburger.setAttribute('aria-expanded', 'false');
+        navLinks.classList.remove('open');
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        window.scrollTo(0, menuScrollY);
+      });
+    });
+  }
+
+  // ===== 背景音乐播放器（移动端+PC端双端兼容版） =====
+  let isPlaying = false;
+  let audioWaked = false;
+  const music = document.getElementById('bgMusic');
+  const musicIcon = document.getElementById('musicIcon');
+
+  const audioUrl = "./silence.mp3";
+
+  music.src = audioUrl;
+  music.preload = "auto";
+  music.load();
+
+  function toggleMusic() {
+    if (!audioWaked) {
+      music.play().then(() => {
+        music.pause();
+        music.currentTime = 0;
+      }).catch(() => {});
+      audioWaked = true;
+    }
+
+    if (isPlaying) {
+      music.pause();
+      musicIcon.textContent = '🔇';
+      isPlaying = false;
+    } else {
+      music.play().then(() => {
+        musicIcon.textContent = '🔊';
+        isPlaying = true;
+      }).catch(err => {
+        console.warn("音频播放失败：", err);
+      });
+    }
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if (!document.hidden && isPlaying) {
+      music.play().catch(() => {});
+    }
+  });
+
+  window.addEventListener('resize', function() {
+    if (isPlaying && music.paused) {
+      music.play().catch(() => {});
+    }
+  });
+
+  music.setAttribute('playsinline', '');
+  music.setAttribute('webkit-playsinline', '');
+</script>
+</body>
+</html>
