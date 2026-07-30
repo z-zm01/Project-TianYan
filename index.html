@@ -86,15 +86,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(6, 13, 24, 0.75);
-    backdrop-filter: blur(20px) saturate(140%);
-    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    background: #060d18;
     border-bottom: 1px solid var(--border-subtle);
     transition: all var(--transition);
     will-change: background, box-shadow;
   }
   .navbar.scrolled {
-    background: rgba(6, 13, 24, 0.94);
+    background: #060d18;
     border-bottom-color: rgba(74, 158, 255, 0.15);
     box-shadow: 0 1px 32px rgba(0, 0, 0, 0.6);
   }
@@ -471,14 +469,12 @@
   }
   @media (hover: hover) { .login-back:hover { color: var(--accent); } }
   .login-card {
-    background: var(--bg-card);
+    background: #0a1628;
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
     padding: 3rem 2.5rem;
     width: 100%;
     max-width: 420px;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
     box-shadow: 0 8px 64px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(74, 158, 255, 0.05) inset;
     animation: fadeIn 0.6s ease;
     position: relative;
@@ -582,10 +578,8 @@
     position: fixed;
     top: 0; left: 0; bottom: 0;
     width: var(--sidebar-w);
-    background: rgba(8, 18, 36, 0.95);
+    background: #081224;
     border-right: 1px solid var(--border-subtle);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
     z-index: 100;
     display: flex;
     flex-direction: column;
@@ -731,7 +725,7 @@
     left: 1rem;
     z-index: 200;
     width: 40px; height: 40px;
-    background: rgba(8, 18, 36, 0.95);
+    background: #081224;
     border: 1px solid var(--border-subtle);
     border-radius: 8px;
     cursor: pointer;
@@ -739,8 +733,6 @@
     justify-content: center;
     color: var(--text-primary);
     font-size: 1.2rem;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
   }
   .sidebar-overlay {
     display: none;
@@ -796,9 +788,7 @@
       width: 260px; height: 100vh;
       height: -webkit-fill-available;
       flex-direction: column;
-      background: rgba(6, 13, 24, 0.96);
-      backdrop-filter: blur(30px);
-      -webkit-backdrop-filter: blur(30px);
+      background: #060d18;
       padding: 5rem 1.5rem 2rem;
       padding-top: calc(5rem + env(safe-area-inset-top, 0px));
       padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
